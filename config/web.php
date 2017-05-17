@@ -3,7 +3,7 @@
 $params = require(__DIR__ . '/params.php');
 
 $config = [
-    'id' => 'basic',
+    'id' => 'rentcarsystem',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'components' => [
@@ -38,15 +38,37 @@ $config = [
             ],
         ],
         'db' => require(__DIR__ . '/db.php'),
-        /*
+        
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
             ],
         ],
-        */
+        'view' => [
+            'class' => 'app\components\View',
+			'theme' => [
+				'pathMap' => [
+	                '@app/views' => '@app/themes/adminlte/views'
+				],
+			],
+		],
+		'assetManager' => [
+			'bundles' => [
+				'dmstr\web\AdminLteAsset' => [
+					'skin' => 'skin-blue',
+				],
+			],
+		],
+		'authManager' => [
+            'class' => 'yii\rbac\DbManager', // or use 'yii\rbac\DbManager'
+        ]
     ],
+    'modules' => [
+        'gridview' => [
+			'class' => '\kartik\grid\Module'
+		],
+	],
     'params' => $params,
 ];
 
