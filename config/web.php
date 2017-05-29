@@ -4,6 +4,7 @@ $params = require(__DIR__ . '/params.php');
 
 $config = [
     'id' => 'rentcarsystem',
+    'name' => 'Rent Car System',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'components' => [
@@ -15,9 +16,11 @@ $config = [
             'class' => 'yii\caching\FileCache',
         ],
         'user' => [
-            'identityClass' => 'mdm\admin\models\User',
-            'loginUrl' => ['site/login'],
-        ],
+			'identityClass' => 'mdm\admin\models\User',
+			'enableAutoLogin' => true,
+			'enableSession' => true,
+			'authTimeout' => 60 * 60, /* 1 hour */
+		],
         'errorHandler' => [
             'errorAction' => 'site/error',
         ],
@@ -38,52 +41,46 @@ $config = [
             ],
         ],
         'db' => require(__DIR__ . '/db.php'),
-        
-        'urlManager' => [
-            'enablePrettyUrl' => true,
-            'showScriptName' => false,
-            'rules' => [
-            ],
-        ],
-        'view' => [
-            'class' => 'app\components\View',
-			'theme' => [
-				'pathMap' => [
-	                '@app/views' => '@app/themes/adminlte/views'
-				],
-			],
+        'authManager' => [
+			'class' => 'app\components\DbManager',
+			'defaultRoles' => ['guest'], //role biasa
 		],
-		'assetManager' => [
+        
+        'urlManager'  => require(__DIR__ . '/url-manager.php'),
+        
+        'assetManager' => [
 			'bundles' => [
 				'dmstr\web\AdminLteAsset' => [
-					'skin' => 'skin-blue',
+					'skin' => 'skin-blue-light',
 				],
 			],
 		],
-		'authManager' => [
-            'class' => 'yii\rbac\PhpManager', // or use 'yii\rbac\DbManager'
-        ],
-		'as access' => [
-			'class' => 'mdm\admin\components\AccessControl',
-			'allowActions' => [
-	//            'site/*',
-	//            'admin/*',
-				// The actions listed here will be allowed to everyone including guests.
-				// So, 'admin/*' should not appear here in the production, of course.
-				// But in the earlier stages of your development, you may probably want to
-				// add a lot of actions here until you finally completed setting up rbac,
-				// otherwise you may not even take a first step.
-			]
+		'view' => [
+			'class' => 'app\components\View',
+			'theme' => [
+				'pathMap' => [
+					'@app/views' => '@app/themes/adminlte/views',
+					'@dektrium/user/views' => '@app/themes/adminlte/views'
+				],
+				'baseUrl' => '@app/themes/adminlte',
+			],
 		],
-    ],
-    'modules' => [
-        'gridview' => [
+	],
+	'modules' => [
+		'gridview' => [
 			'class' => '\kartik\grid\Module'
 		],
 		'admin' => [
-            'class' => 'mdm\admin\Module',
-        ]
+			'class' => 'mdm\admin\Module',
+			'layout' => '@app/themes/adminlte/views/layouts/main',
+		],
 	],
+	'as access' => [
+        'class' => 'mdm\admin\components\AccessControl',
+        'allowActions' => [
+            'site/login',
+        ]
+    ],
     'params' => $params,
 ];
 
