@@ -2,9 +2,9 @@
 
 /* @var $this yii\web\View */
 
-$this->title = 'Dashboard';
+$this->title = 'Report';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="site-index">
+<div class="report-index">
     
 </div>

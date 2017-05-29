@@ -27,7 +27,7 @@ class User extends ActiveRecord implements IdentityInterface
 {
     const STATUS_DELETED = 0;
     const STATUS_ACTIVATION = -5;
-    const STATUS_ACTIVE = 1;
+    const STATUS_ACTIVE = 10;
 
     public $current_password;
     public $new_password;
