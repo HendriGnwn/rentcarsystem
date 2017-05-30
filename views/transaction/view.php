@@ -1,9 +1,12 @@
 <?php
 
+use app\helpers\DetailViewHelper;
+use app\models\Transaction;
+use yii\web\View;
 use yii\widgets\DetailView;
 
-/* @var $this yii\web\View */
-/* @var $model app\models\Transaction */
+/* @var $this View */
+/* @var $model Transaction */
 ?>
 <div class="transaction-view">
  
@@ -12,20 +15,37 @@ use yii\widgets\DetailView;
         'attributes' => [
             'id',
             'code',
-            'customer_id',
-            'car_id',
-            'driver_id',
-            'rent_at',
-            'rent_finish_at',
+            [
+                'attribute' => 'customer_id',
+                'value' => $model->customer->combineAttribute,
+            ],
+            [
+                'attribute' => 'car_id',
+                'value' => $model->car->combineAttribute,
+            ],
+            [
+                'attribute' => 'driver_id',
+                'value' => isset($model->driver) ? $model->driver->combineAttribute : $model->driver_id,
+            ],
+            DetailViewHelper::date($model, 'rent_at'),
+            DetailViewHelper::date($model, 'rent_finish_at'),
             'actualy_total',
             'bill_total',
-            'status',
-            'status_payment',
-            'user_id',
-            'created_at',
-            'updated_at',
-            'created_by',
-            'updated_by',
+            [
+                'attribute' => 'status',
+                'value' => $model->getStatusWithStyle(),
+                'format' => 'raw',
+            ],
+            [
+                'attribute' => 'status_payment',
+                'value' => $model->getStatusPaymentWithStyle(),
+                'format' => 'raw',
+            ],
+            DetailViewHelper::author($model, 'user_id'),
+            DetailViewHelper::dateTime($model, 'created_at'),
+            DetailViewHelper::dateTime($model, 'updated_at'),
+            DetailViewHelper::author($model, 'created_by'),
+            DetailViewHelper::author($model, 'updated_by'),
         ],
     ]) ?>
 

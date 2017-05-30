@@ -41,3 +41,14 @@ use yii\helpers\Html;
         </div>
     </nav>
 </header>
+
+<style>
+    @media (max-width: 767px) {
+        .skin-blue-light .main-header .navbar .dropdown-menu li a {
+            color: #000;
+        }
+        .skin-blue-light .main-header .navbar .dropdown-menu li a:hover {
+            color: #fff;
+        }
+    }
+</style>

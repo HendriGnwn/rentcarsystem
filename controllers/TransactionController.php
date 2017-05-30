@@ -2,14 +2,16 @@
 
 namespace app\controllers;
 
-use Yii;
-use app\models\Transaction;
-use app\models\searchs\TransactionSearch;
 use app\controllers\BaseController;
-use yii\web\NotFoundHttpException;
+use app\helpers\DateTime;
+use app\models\Car;
+use app\models\searchs\TransactionSearch;
+use app\models\Transaction;
+use Yii;
 use yii\filters\VerbFilter;
-use \yii\web\Response;
 use yii\helpers\Html;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 /**
  * TransactionController implements the CRUD actions for Transaction model.
@@ -267,5 +269,28 @@ class TransactionController extends BaseController
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
+    }
+    
+        
+    public function actionAjaxCalculateActuallyTotal()
+    {
+        $request = Yii::$app->request;
+        $price = $request->post('price');
+        $carId = $request->post('car_id');
+        $rentAt = $request->post('rent_at');
+        $rentFinishAt = $request->post('finish_at');
+        
+        $car = Car::find()->where(['id' => $carId])->actived()->one();
+        if ($car) {
+            $price = $car->price;    
+        } else {
+            $price = 0;
+        }
+        
+        $day = DateTime::getDuration($rentAt, $rentFinishAt);
+        
+        Yii::$app->response->format = Response::FORMAT_RAW;
+        
+        return Transaction::calculateActuallyTotal($price, $day->days);
     }
 }

@@ -74,4 +74,8 @@ class Driver extends \app\models\BaseActiveRecord
     {
         return $this->hasMany(Transaction::className(), ['driver_id' => 'id']);
     }
+    
+    public function getCombineAttribute() {
+        return $this->name . ' - ' . $this->identity_number . ' - ' . $this->phone;
+    }
 }

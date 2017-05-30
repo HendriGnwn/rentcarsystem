@@ -2,7 +2,8 @@
 
 namespace app\models;
 
-use Yii;
+use app\helpers\FormatConverter;
+use yii\db\ActiveQuery;
 
 /**
  * This is the model class for table "car".
@@ -21,7 +22,7 @@ use Yii;
  *
  * @property Transaction[] $transactions
  */
-class Car extends \app\models\BaseActiveRecord
+class Car extends BaseActiveRecord
 {
     /**
      * @inheritdoc
@@ -68,7 +69,7 @@ class Car extends \app\models\BaseActiveRecord
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
     public function getTransactions()
     {
@@ -76,6 +77,10 @@ class Car extends \app\models\BaseActiveRecord
     }
     
     public function getFormattedPrice() {
-        return \app\helpers\FormatConverter::rupiahFormat($this->price, 2);
+        return FormatConverter::rupiahFormat($this->price, 2);
+    }
+    
+    public function getCombineAttribute() {
+        return $this->police_number . ' - ' . $this->color . ' - ' . $this->year_out . ' - ' . $this->getFormattedPrice();
     }
 }

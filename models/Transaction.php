@@ -3,6 +3,8 @@
 namespace app\models;
 
 use Yii;
+use yii\db\ActiveQuery;
+use yii\helpers\Html;
 
 /**
  * This is the model class for table "transaction".
@@ -30,8 +32,16 @@ use Yii;
  * @property User $user
  * @property TransactionReturn[] $transactionReturns
  */
-class Transaction extends \app\models\BaseActiveRecord
+class Transaction extends BaseActiveRecord
 {
+    const STATUS_PENDING = 1;
+    const STATUS_RENT = 2;
+    const STATUS_FINISH = 10;
+    const STATUS_CANCEL = 5;
+    
+    const STATUS_PAYMENT_DP = 1;
+    const STATUS_PAYMENT_PAID = 2;
+    
     /**
      * @inheritdoc
      */
@@ -46,16 +56,28 @@ class Transaction extends \app\models\BaseActiveRecord
     public function rules()
     {
         return [
-            [['code', 'customer_id', 'car_id', 'driver_id', 'rent_at', 'rent_finish_at', 'actualy_total', 'bill_total', 'status', 'status_payment', 'user_id', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'required'],
+            [['customer_id', 'car_id', 'rent_at', 'rent_finish_at', 'actualy_total', 'bill_total', 'status', 'status_payment'], 'required'],
             [['customer_id', 'car_id', 'driver_id', 'status', 'status_payment', 'user_id', 'created_by', 'updated_by'], 'integer'],
-            [['rent_at', 'rent_finish_at', 'created_at', 'updated_at'], 'safe'],
+            [['code', 'rent_at', 'rent_finish_at', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
             [['actualy_total', 'bill_total'], 'number'],
+            [['driver_id'], 'default', 'value' => null],
             [['code'], 'string', 'max' => 30],
             [['customer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Customer::className(), 'targetAttribute' => ['customer_id' => 'id']],
             [['car_id'], 'exist', 'skipOnError' => true, 'targetClass' => Car::className(), 'targetAttribute' => ['car_id' => 'id']],
             [['driver_id'], 'exist', 'skipOnError' => true, 'targetClass' => Driver::className(), 'targetAttribute' => ['driver_id' => 'id']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
         ];
+    }
+    
+    public function beforeSave($insert) {
+        
+        $this->code = $this->generateCode();
+        
+        if ($insert) {
+            $this->user_id = Yii::$app->user->id;
+        }
+        
+        return parent::beforeSave($insert);
     }
 
     /**
@@ -84,7 +106,7 @@ class Transaction extends \app\models\BaseActiveRecord
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
     public function getCustomer()
     {
@@ -92,7 +114,7 @@ class Transaction extends \app\models\BaseActiveRecord
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
     public function getCar()
     {
@@ -100,7 +122,7 @@ class Transaction extends \app\models\BaseActiveRecord
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
     public function getDriver()
     {
@@ -108,7 +130,7 @@ class Transaction extends \app\models\BaseActiveRecord
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
     public function getUser()
     {
@@ -116,10 +138,120 @@ class Transaction extends \app\models\BaseActiveRecord
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
     public function getTransactionReturns()
     {
         return $this->hasMany(TransactionReturn::className(), ['transaction_id' => 'id']);
     }
+    
+    /**
+     * generate code with format `[prefix][Ymd]-[xxxxxx]` where:
+     * [prefix] INV
+     * [Y] is current year in php date format.
+     * [m] is current month in php date format.
+     * [d] is current day in php date format.
+     * [xxxxxx] is incremental number of order each day pad by certain length.
+     * 
+     * eg:
+     * - INV-20161201-0001
+     * - INV-20161201-0002
+     * - INV-20161202-0001
+     * - INV-20161202-0002
+     * - INV-20170101-0001
+     * 
+     * @param type $prefix INV
+     * @param type $padLength increment pad length
+     * @param type $separator
+     * @return string
+     */
+    public function generateCode($prefix = 'INV', $padLength = 4, $separator = '-') 
+    {
+        $car = Car::find()
+                ->actived()
+                ->where(['id' => $this->car_id])
+                ->one();
+        if ($car) {
+            $policeNumber = $car->police_number;
+        } else {
+            $policeNumber = null;
+        }
+        
+        $left = strtoupper($prefix) . '-' . strtoupper($policeNumber) . $separator . date('Y-m') . $separator;
+        $leftLen = strlen($left);
+        $increment = 1;
+
+        $last = self::find()
+                ->select('code')
+                ->where(['LIKE', 'code', $left])
+                ->orderBy(['id' => SORT_DESC])
+                ->limit(1)
+                ->scalar();
+
+        if ($last) {
+            $increment = (int) substr($last, $leftLen, $padLength);
+            $increment++;
+        }
+
+        $number = str_pad($increment, $padLength, '0', STR_PAD_LEFT);
+
+        return $left . $number;
+    }
+    
+    public static function statusLabels() {
+        return [
+            self::STATUS_PENDING => Yii::t('app', 'Pending'),
+            self::STATUS_RENT => Yii::t('app', 'Rent'),
+            self::STATUS_FINISH => Yii::t('app', 'Finish'),
+            self::STATUS_CANCEL => Yii::t('app', 'Cancel'),
+        ];
+    }
+
+    public function getStatusLabel() {
+        $list = self::statusLabels();
+        return $list[$this->status] ? $list[$this->status] : $this->status;
+    }
+
+    public function getStatusWithStyle() {
+        switch ($this->status) {
+            case self::STATUS_PENDING :
+                return Html::label($this->getStatusLabel(), null, ['class' => 'label label-warning label-sm']);
+            case self::STATUS_RENT :
+                return Html::label($this->getStatusLabel(), null, ['class' => 'label label-primary label-sm']);
+            case self::STATUS_FINISH :
+                return Html::label($this->getStatusLabel(), null, ['class' => 'label label-success label-sm']);
+            case self::STATUS_CANCEL :
+                return Html::label($this->getStatusLabel(), null, ['class' => 'label label-danger label-sm']);
+            default :
+                return Html::label($this->getStatusLabel(), null, ['class' => 'label label-default label-sm']);
+        }
+    }
+    
+    public static function statusPaymentLabels() {
+        return [
+            self::STATUS_PAYMENT_DP => Yii::t('app', 'Down Payment'),
+            self::STATUS_PAYMENT_PAID => Yii::t('app', 'Paid'),
+        ];
+    }
+
+    public function getStatusPaymentLabel() {
+        $list = self::statusPaymentLabels();
+        return $list[$this->status_payment] ? $list[$this->status_payment] : $this->status_payment;
+    }
+
+    public function getStatusPaymentWithStyle() {
+        switch ($this->status_payment) {
+            case self::STATUS_PAYMENT_DP :
+                return Html::label($this->getStatusPaymentLabel(), null, ['class' => 'label label-primary label-sm']);
+            case self::STATUS_PAYMENT_PAID :
+                return Html::label($this->getStatusPaymentLabel(), null, ['class' => 'label label-success label-sm']);
+            default :
+                return Html::label($this->getStatusPaymentLabel(), null, ['class' => 'label label-default label-sm']);
+        }
+    }
+    
+    public static function calculateActuallyTotal($price, $day) {
+        return (double) $price * (int) $day;
+    }
+
 }

@@ -2,36 +2,20 @@
 
 namespace app\controllers;
 
-use Yii;
+use app\controllers\BaseController;
 use app\models\Customer;
 use app\models\searchs\CustomerSearch;
-use app\controllers\BaseController;
-use yii\web\NotFoundHttpException;
-use yii\filters\VerbFilter;
-use \yii\web\Response;
+use Yii;
 use yii\helpers\Html;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
+use yii\web\UploadedFile;
 
 /**
  * CustomerController implements the CRUD actions for Customer model.
  */
 class CustomerController extends BaseController
 {
-    /**
-     * @inheritdoc
-     */
-    public function behaviors()
-    {
-        return [
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'delete' => ['post'],
-                    'bulk-delete' => ['post'],
-                ],
-            ],
-        ];
-    }
-
     /**
      * Lists all Customer models.
      * @return mixed
@@ -99,16 +83,21 @@ class CustomerController extends BaseController
                                 Html::button('Save',['class'=>'btn btn-primary','type'=>"submit"])
         
                 ];         
-            }else if($model->load($request->post()) && $model->save()){
-                return [
-                    'forceReload'=>'#crud-datatable-pjax',
-                    'title'=> "Create new Customer",
-                    'content'=>'<span class="text-success">Create Customer success</span>',
-                    'footer'=> Html::button('Close',['class'=>'btn btn-default pull-left','data-dismiss'=>"modal"]).
+            }else if($model->load($request->post())){
+                $model->photoFile = UploadedFile::getInstance($model, 'photoFile');
+                if ($model->save()) {
+                    return [
+                        'forceReload'=>'#crud-datatable-pjax',
+                        'title'=> "Create new Customer",
+                        'content'=>'<span class="text-success">Create Customer success</span>',
+                            'footer'=> Html::button('Close',['class'=>'btn btn-default pull-left','data-dismiss'=>"modal"]).
                             Html::a('Create More',['create'],['class'=>'btn btn-primary','role'=>'modal-remote'])
         
-                ];         
-            }else{           
+                    ];
+                }
+                goto render;
+            }else{
+                render:
                 return [
                     'title'=> "Create new Customer",
                     'content'=>$this->renderAjax('create', [
@@ -116,16 +105,20 @@ class CustomerController extends BaseController
                     ]),
                     'footer'=> Html::button('Close',['class'=>'btn btn-default pull-left','data-dismiss'=>"modal"]).
                                 Html::button('Save',['class'=>'btn btn-primary','type'=>"submit"])
-        
-                ];         
+                ];        
             }
         }else{
             /*
             *   Process for non-ajax request
             */
-            if ($model->load($request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id]);
+            if ($model->load($request->post())) {
+                $model->photoFile = UploadedFile::getInstance($model, 'photoFile');
+                if ($model->save()) {
+                    return $this->redirect(['view', 'id' => $order->id]);
+                }
+                goto nonajax;
             } else {
+                nonajax:
                 return $this->render('create', [
                     'model' => $model,
                 ]);
@@ -160,17 +153,22 @@ class CustomerController extends BaseController
                     'footer'=> Html::button('Close',['class'=>'btn btn-default pull-left','data-dismiss'=>"modal"]).
                                 Html::button('Save',['class'=>'btn btn-primary','type'=>"submit"])
                 ];         
-            }else if($model->load($request->post()) && $model->save()){
-                return [
-                    'forceReload'=>'#crud-datatable-pjax',
-                    'title'=> "Customer #".$id,
-                    'content'=>$this->renderAjax('view', [
-                        'model' => $model,
-                    ]),
-                    'footer'=> Html::button('Close',['class'=>'btn btn-default pull-left','data-dismiss'=>"modal"]).
-                            Html::a('Edit',['update','id'=>$id],['class'=>'btn btn-primary','role'=>'modal-remote'])
-                ];    
+            }else if($model->load($request->post())){
+                $model->photoFile = UploadedFile::getInstance($model, 'photoFile');
+                if ($model->save()) {
+                    return [
+                        'forceReload'=>'#crud-datatable-pjax',
+                        'title'=> "Customer #".$id,
+                        'content'=>$this->renderAjax('view', [
+                            'model' => $model,
+                        ]),
+                        'footer'=> Html::button('Close',['class'=>'btn btn-default pull-left','data-dismiss'=>"modal"]).
+                                Html::a('Edit',['update','id'=>$id],['class'=>'btn btn-primary','role'=>'modal-remote'])
+                    ];    
+                }
+                goto update;
             }else{
+                update:
                  return [
                     'title'=> "Update Customer #".$id,
                     'content'=>$this->renderAjax('update', [
@@ -184,9 +182,14 @@ class CustomerController extends BaseController
             /*
             *   Process for non-ajax request
             */
-            if ($model->load($request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id]);
+            if ($model->load($request->post())) {
+                $model->photoFile = UploadedFile::getInstance($model, 'photoFile');
+                if ($model->save()) {
+                    return $this->redirect(['view', 'id' => $order->id]);
+                }
+                goto updateNonAjax;
             } else {
+                updateNonAjax:
                 return $this->render('update', [
                     'model' => $model,
                 ]);

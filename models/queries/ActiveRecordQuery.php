@@ -8,7 +8,8 @@
 
 namespace app\models\queries;
 
-use app\components\ActiveRecord;
+use app\models\BaseActiveRecord;
+use Yii;
 use yii\db\ActiveQuery;
 
 /**
@@ -37,7 +38,7 @@ class ActiveRecordQuery extends ActiveQuery
 	public function actived()
 	{
 		return $this->andWhere([
-			'status' => ActiveRecord::STATUS_ACTIVE,
+			'status' => BaseActiveRecord::STATUS_ACTIVE,
 		]);
 	}
 	
@@ -49,7 +50,7 @@ class ActiveRecordQuery extends ActiveQuery
 	public function andWhereCreatedBy()
 	{
 		return $this->andWhere([
-			'created_by' => \Yii::$app->user->id,
+			'created_by' => Yii::$app->user->id,
 		]);
 	}
 		

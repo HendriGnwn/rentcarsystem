@@ -14,6 +14,8 @@ class BaseActiveRecord extends ActiveRecord {
     const STATUS_ACTIVE = 1;
     const STATUS_INACTIVE = 0;
     
+    private $_path;
+    
     public function behaviors() {
         return [
                 [
@@ -69,6 +71,24 @@ class BaseActiveRecord extends ActiveRecord {
      */
     public static function find() {
         return new ActiveRecordQuery(get_called_class());
+    }
+    
+    /**
+     * set path
+     * 
+     * @param type $value
+     */
+    public function setPath($value)
+    {
+        $this->_path = $value;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getPath()
+    {
+        return $this->_path;
     }
 
 }

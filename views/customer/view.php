@@ -15,6 +15,11 @@ use yii\widgets\DetailView;
         'attributes' => [
             'id',
             'identity_number',
+            [
+                'attribute' => 'photo_identity_number',
+                'value' => $model->getPhotoIdentityNumberUrlHtml(),
+                'format' => 'raw',
+            ],
             'name',
             'address',
             'phone',

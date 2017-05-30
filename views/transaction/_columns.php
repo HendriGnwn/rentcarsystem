@@ -1,4 +1,6 @@
 <?php
+
+use app\models\Transaction;
 use yii\helpers\Url;
 
 return [
@@ -21,18 +23,40 @@ return [
     [
         'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'customer_id',
+        'content' => function ($model) {
+            return $model->customer->combineAttribute;
+        }
     ],
     [
         'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'car_id',
-    ],
-    [
-        'class'=>'\kartik\grid\DataColumn',
-        'attribute'=>'driver_id',
+        'content' => function ($model) {
+            return $model->car->police_number;
+        }
     ],
     [
         'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'rent_at',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'rent_finish_at',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'status',
+        'filter' => Transaction::statusLabels(),
+        'content' => function ($model) {
+            return $model->getStatusWithStyle();
+        }
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'status_payment',
+        'filter' => Transaction::statusPaymentLabels(),
+        'content' => function ($model) {
+            return $model->getStatusPaymentWithStyle();
+        }
     ],
     // [
         // 'class'=>'\kartik\grid\DataColumn',
