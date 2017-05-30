@@ -56,11 +56,7 @@ return [
 ```
 RUNNING
 --------
-
-Import database using following command:
-~~~
-php yii migrate
-~~~
+Import database using file rentcar.sql in the migrations folder.
 
 You can running using:
 http://localhost/rentcarsystem/web
