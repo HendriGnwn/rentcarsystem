@@ -18,7 +18,7 @@ class CarSearch extends Car
     public function rules()
     {
         return [
-            [['id', 'status', 'created_by', 'updated_by'], 'integer'],
+            [['id', 'status', 'created_by', 'updated_by', 'quantity'], 'integer'],
             [['police_number', 'year_out', 'car_type', 'color', 'created_at', 'updated_at'], 'safe'],
             [['price'], 'number'],
         ];
@@ -61,6 +61,7 @@ class CarSearch extends Car
             'year_out' => $this->year_out,
             'price' => $this->price,
             'status' => $this->status,
+            'quantity' => $this->quantity,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'created_by' => $this->created_by,

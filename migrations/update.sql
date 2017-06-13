@@ -23,3 +23,6 @@ CHANGE `updated_by` `updated_by` int(11) NULL AFTER `created_by`;
 ALTER TABLE `transaction`
 CHANGE `rent_at` `rent_at` date NOT NULL AFTER `driver_id`,
 CHANGE `rent_finish_at` `rent_finish_at` date NOT NULL AFTER `rent_at`;
+
+ALTER TABLE `car`
+ADD `quantity` int(11) NOT NULL AFTER `price`;

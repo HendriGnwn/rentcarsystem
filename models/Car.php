@@ -14,6 +14,7 @@ use yii\db\ActiveQuery;
  * @property string $car_type
  * @property string $color
  * @property string $price
+ * @property string $quantity
  * @property integer $status
  * @property string $created_at
  * @property string $updated_at
@@ -38,10 +39,10 @@ class Car extends BaseActiveRecord
     public function rules()
     {
         return [
-            [['police_number', 'year_out', 'car_type', 'color', 'price'], 'required'],
+            [['police_number', 'year_out', 'car_type', 'color', 'price', 'quantity'], 'required'],
             [['year_out', 'created_at', 'updated_at'], 'safe'],
             [['price'], 'number'],
-            [['status', 'created_by', 'updated_by'], 'integer'],
+            [['status', 'created_by', 'updated_by', 'quantity'], 'integer'],
             [['police_number'], 'string', 'max' => 10],
             [['car_type'], 'string', 'max' => 30],
             [['color'], 'string', 'max' => 20],
@@ -60,6 +61,7 @@ class Car extends BaseActiveRecord
             'car_type' => 'Car Type',
             'color' => 'Color',
             'price' => 'Price',
+            'quantity' => 'Quantity',
             'status' => 'Status',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
@@ -81,6 +83,47 @@ class Car extends BaseActiveRecord
     }
     
     public function getCombineAttribute() {
-        return $this->police_number . ' - ' . $this->color . ' - ' . $this->year_out . ' - ' . $this->getFormattedPrice();
+        return $this->police_number . ' - ' . $this->car_type . ' - ' . $this->color . ' - ' . $this->getFormattedPrice();
     }
+	
+	public static function getQuantityAvailable($id)
+	{
+		$used = Transaction::find()
+				->where([
+					'car_id' => $id,
+					'status' => Transaction::STATUS_RENT
+				])
+				->count();
+		
+		$model = self::find()
+				->where([
+					'id' => $id
+				])
+				->actived()
+				->one();
+		if (!$model) {
+			return null;
+		}
+		
+		return $model->quantity - $used;
+	}
+	
+	public static function getAvailableCars()
+	{
+		$models = self::find()->actived()->all();
+		$cars = [];
+		foreach ($models as $model) {
+			$used = Transaction::find()
+				->where([
+					'car_id' => $model->id,
+					'status' => Transaction::STATUS_RENT
+				])
+				->count();
+			if (($model->quantity - $used) > 0) {
+				$cars[] = $model->id;
+			}
+		}
+		
+		return Car::find()->andWhere(['in', 'id', $cars])->all();
+	}
 }

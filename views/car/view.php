@@ -18,6 +18,7 @@ use yii\widgets\DetailView;
             'year_out',
             'car_type',
             'color',
+			'quantity',
             'price',
             [
                 'attribute' => 'status',

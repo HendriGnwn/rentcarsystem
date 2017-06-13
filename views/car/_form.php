@@ -23,6 +23,8 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'color')->textInput(['maxlength' => true]) ?>
 
+    <?= $form->field($model, 'quantity')->textInput(['maxlength' => true, 'type' => 'number']) ?>
+	
     <?= $form->field($model, 'price')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'status')->widget(Select2::className(), [

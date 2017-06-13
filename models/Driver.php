@@ -78,4 +78,23 @@ class Driver extends \app\models\BaseActiveRecord
     public function getCombineAttribute() {
         return $this->name . ' - ' . $this->identity_number . ' - ' . $this->phone;
     }
+	
+	public static function getAvailableDrivers()
+	{
+		$models = self::find()->actived()->all();
+		$drivers = [];
+		foreach ($models as $model) {
+			$used = Transaction::find()
+				->andWhere([
+					'driver_id' => $model->id,
+					'status' => Transaction::STATUS_RENT
+				])
+				->count();
+			if ($used == 0) {
+				$drivers[] = $model->id;
+			}
+		}
+		
+		return self::find()->andWhere(['in', 'id', $drivers])->all();
+	}
 }

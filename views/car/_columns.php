@@ -30,6 +30,10 @@ return [
     ],
     [
         'class'=>'\kartik\grid\DataColumn',
+        'attribute'=>'quantity',
+    ],
+    [
+        'class'=>'\kartik\grid\DataColumn',
         'attribute'=>'price',
         'content' => function ($model) {
             return $model->getFormattedPrice();

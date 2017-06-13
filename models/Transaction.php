@@ -104,6 +104,12 @@ class Transaction extends BaseActiveRecord
             'updated_by' => 'Updated By',
         ];
     }
+	
+	public function afterSave($insert, $changedAttributes) {
+		parent::afterSave($insert, $changedAttributes);
+		self::consoleChangeStatusPendingToRent();
+		self::consoleChangeStatusRentToFinish();
+	}
 
     /**
      * @return ActiveQuery
@@ -253,5 +259,18 @@ class Transaction extends BaseActiveRecord
     public static function calculateActuallyTotal($price, $day) {
         return (double) $price * (int) $day;
     }
-
+	
+	public static function consoleChangeStatusRentToFinish()
+	{
+		return Transaction::updateAll([
+			'status' => Transaction::STATUS_FINISH
+		], 'status != ' . self::STATUS_FINISH . ' AND rent_finish_at > "' . date('Y-m-d') . '"');
+	}
+	
+	public static function consoleChangeStatusPendingToRent()
+	{
+		return Transaction::updateAll([
+			'status' => Transaction::STATUS_RENT
+		], 'status != ' . self::STATUS_RENT . ' AND rent_at <= "' . date('Y-m-d') . '"');
+	}
 }
