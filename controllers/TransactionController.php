@@ -104,12 +104,13 @@ class TransactionController extends BaseController
             }else if($model->load($request->post()) && $model->save()){
                 return [
                     'forceReload'=>'#crud-datatable-pjax',
-                    'title'=> "Create new Transaction",
-                    'content'=>'<span class="text-success">Create Transaction success</span>',
+                    'title'=> "Transaction #".$model->id,
+                    'content'=>$this->renderAjax('view', [
+                        'model' => $model,
+                    ]),
                     'footer'=> Html::button('Close',['class'=>'btn btn-default pull-left','data-dismiss'=>"modal"]).
-                            Html::a('Create More',['create'],['class'=>'btn btn-primary','role'=>'modal-remote'])
-        
-                ];         
+                            Html::a('Edit',['update','id'=>$model->id],['class'=>'btn btn-primary','role'=>'modal-remote'])
+                ];
             }else{           
                 return [
                     'title'=> "Create new Transaction",
@@ -293,4 +294,11 @@ class TransactionController extends BaseController
         
         return Transaction::calculateActuallyTotal($price, $day->days);
     }
+	
+	public function actionAjaxFindById($id)
+	{
+		Yii::$app->response->format = Response::FORMAT_JSON;
+		
+		return (Transaction::findOne($id));
+	}
 }

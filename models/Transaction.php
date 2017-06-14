@@ -4,6 +4,7 @@ namespace app\models;
 
 use Yii;
 use yii\db\ActiveQuery;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 
 /**
@@ -56,18 +57,31 @@ class Transaction extends BaseActiveRecord
     public function rules()
     {
         return [
-            [['customer_id', 'car_id', 'rent_at', 'rent_finish_at', 'actualy_total', 'bill_total', 'status', 'status_payment'], 'required'],
+            [['customer_id', 'car_id', 'rent_at', 'rent_finish_at', 'actualy_total', 'bill_total', 'status_payment'], 'required'],
             [['customer_id', 'car_id', 'driver_id', 'status', 'status_payment', 'user_id', 'created_by', 'updated_by'], 'integer'],
-            [['code', 'rent_at', 'rent_finish_at', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
+            [['code', 'rent_at', 'rent_finish_at', 'created_at', 'updated_at', 'created_by', 'updated_by', 'status'], 'safe'],
             [['actualy_total', 'bill_total'], 'number'],
             [['driver_id'], 'default', 'value' => null],
             [['code'], 'string', 'max' => 30],
+			[['status'], 'default', 'value' => self::STATUS_PENDING],
             [['customer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Customer::className(), 'targetAttribute' => ['customer_id' => 'id']],
             [['car_id'], 'exist', 'skipOnError' => true, 'targetClass' => Car::className(), 'targetAttribute' => ['car_id' => 'id']],
             [['driver_id'], 'exist', 'skipOnError' => true, 'targetClass' => Driver::className(), 'targetAttribute' => ['driver_id' => 'id']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
         ];
     }
+	
+	public function fields() 
+	{
+		$fields = [
+			'car',
+			'customer',
+			'driver',
+		];
+		
+		return ArrayHelper::merge(parent::fields(), $fields);
+	}
+	
     
     public function beforeSave($insert) {
         
@@ -108,7 +122,7 @@ class Transaction extends BaseActiveRecord
 	public function afterSave($insert, $changedAttributes) {
 		parent::afterSave($insert, $changedAttributes);
 		self::consoleChangeStatusPendingToRent();
-		self::consoleChangeStatusRentToFinish();
+		//self::consoleChangeStatusRentToFinish();
 	}
 
     /**
@@ -148,7 +162,7 @@ class Transaction extends BaseActiveRecord
      */
     public function getTransactionReturns()
     {
-        return $this->hasMany(TransactionReturn::className(), ['transaction_id' => 'id']);
+        return $this->hasOne(TransactionReturn::className(), ['transaction_id' => 'id']);
     }
     
     /**
@@ -271,6 +285,10 @@ class Transaction extends BaseActiveRecord
 	{
 		return Transaction::updateAll([
 			'status' => Transaction::STATUS_RENT
-		], 'status != ' . self::STATUS_RENT . ' AND rent_at <= "' . date('Y-m-d') . '"');
+		], 'status != ' . self::STATUS_FINISH . ' AND rent_at <= "' . date('Y-m-d') . '" AND rent_finish_at >= "' . date('Y-m-d') . '"');
+	}
+	
+	public function getCombineAttribute() {
+		return $this->code . ' - ' . $this->car->car_type . ' - ' . $this->customer->name;
 	}
 }

@@ -36,10 +36,10 @@ class ConsoleController extends Controller
 		echo "  > success, " . $counter . " transaction(s)";
 	}
 	
-	public function actionChangeStatusRentToFinish()
-	{
-		echo "  > change status rent to finish...\n";
-		$counter = Transaction::consoleChangeStatusRentToFinish();
-		echo "  > success, " . $counter . " transaction(s)";
-	}
+//	public function actionChangeStatusRentToFinish()
+//	{
+//		echo "  > change status rent to finish...\n";
+//		$counter = Transaction::consoleChangeStatusRentToFinish();
+//		echo "  > success, " . $counter . " transaction(s)";
+//	}
 }

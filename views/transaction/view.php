@@ -48,5 +48,32 @@ use yii\widgets\DetailView;
             DetailViewHelper::author($model, 'updated_by'),
         ],
     ]) ?>
+	
+	<?php if ($model->status == Transaction::STATUS_FINISH) { ?>
+	
+	<div class="box box-primary">
+		<div class="box-header">
+			Return Details
+		</div>
+		<div class="box-body">
+			<?= DetailView::widget([
+				'model' => $model->transactionReturns,
+				'attributes' => [
+					'id',
+					'code',
+					'return_at',
+					'total',
+					'description',
+					DetailViewHelper::author($model, 'user_id'),
+					DetailViewHelper::dateTime($model, 'created_at'),
+					DetailViewHelper::dateTime($model, 'updated_at'),
+					DetailViewHelper::author($model, 'created_by'),
+					DetailViewHelper::author($model, 'updated_by'),
+				],
+			]) ?>
+		</div>
+	</div>
+	
+	<?php } ?>
 
 </div>

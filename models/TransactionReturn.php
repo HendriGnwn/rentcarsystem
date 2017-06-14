@@ -38,9 +38,9 @@ class TransactionReturn extends \app\models\BaseActiveRecord
     public function rules()
     {
         return [
-            [['transaction_id', 'code', 'return_at', 'total', 'description', 'user_id'], 'required'],
+            [['transaction_id', 'return_at', 'total', 'description'], 'required'],
             [['transaction_id', 'user_id', 'created_by', 'updated_by'], 'integer'],
-            [['return_at', 'created_at', 'updated_at'], 'safe'],
+            [['return_at', 'created_at', 'updated_at', 'user_id', 'code'], 'safe'],
             [['total'], 'number'],
             [['code'], 'string', 'max' => 30],
             [['description'], 'string', 'max' => 255],
@@ -83,5 +83,49 @@ class TransactionReturn extends \app\models\BaseActiveRecord
     public function getUser()
     {
         return $this->hasOne(User::className(), ['id' => 'user_id']);
+    }
+	
+	public function beforeSave($insert) {
+        
+        $this->code = $this->generateCode();
+        
+        if ($insert) {
+            $this->user_id = Yii::$app->user->id;
+        }
+		
+        return parent::beforeSave($insert);
+    }
+	
+	public function afterSave($insert, $changedAttributes) {
+		
+		$transaction = Transaction::findOne($this->transaction_id);
+		$transaction->status = Transaction::STATUS_FINISH;
+		$transaction->status_payment = Transaction::STATUS_PAYMENT_PAID;
+		$transaction->updateAttributes(['status', 'status_payment']);
+		
+		return parent::afterSave($insert, $changedAttributes);
+	}
+	
+    public function generateCode($prefix = 'RET', $padLength = 4, $separator = '-') 
+    {
+        $left = strtoupper($prefix) . $separator . date('Y-m') . $separator;
+        $leftLen = strlen($left);
+        $increment = 1;
+
+        $last = self::find()
+                ->select('code')
+                ->where(['LIKE', 'code', $left])
+                ->orderBy(['id' => SORT_DESC])
+                ->limit(1)
+                ->scalar();
+
+        if ($last) {
+            $increment = (int) substr($last, $leftLen, $padLength);
+            $increment++;
+        }
+
+        $number = str_pad($increment, $padLength, '0', STR_PAD_LEFT);
+
+        return $left . $number;
     }
 }
