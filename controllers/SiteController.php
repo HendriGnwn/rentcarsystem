@@ -2,12 +2,13 @@
 
 namespace app\controllers;
 
-use Yii;
-use yii\filters\AccessControl;
-use yii\web\Controller;
-use yii\filters\VerbFilter;
-use app\models\LoginForm;
 use app\models\ContactForm;
+use app\models\LoginForm;
+use app\models\searchs\TransactionSearch;
+use app\models\Transaction;
+use Yii;
+use yii\filters\VerbFilter;
+use yii\helpers\ArrayHelper;
 
 class SiteController extends BaseController
 {
@@ -60,7 +61,19 @@ class SiteController extends BaseController
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $searchModel = new TransactionSearch();
+        
+        $queryParams = ArrayHelper::merge(Yii::$app->request->queryParams, [
+            'TransactionSearch' => [
+                'status' => Transaction::STATUS_RENT,
+            ]
+        ]);
+        $dataProvider = $searchModel->search($queryParams);
+
+        return $this->render('index', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
     }
 
     /**
