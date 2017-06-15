@@ -48,6 +48,13 @@ class TransactionController extends BaseController
             'dataProvider' => $dataProvider,
         ]);
     }
+	
+	public function actionRefreshStatus()
+    {    
+		Transaction::consoleChangeStatusPendingToRent();
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        return ['forceClose'=>true,'forceReload'=>'#crud-datatable-pjax'];
+    }
 
 
     /**

@@ -19,7 +19,7 @@ class TransactionSearch extends Transaction
     {
         return [
             [['id', 'customer_id', 'car_id', 'driver_id', 'status', 'status_payment', 'user_id', 'created_by', 'updated_by'], 'integer'],
-            [['code', 'rent_at', 'rent_finish_at', 'created_at', 'updated_at'], 'safe'],
+            [['start_date', 'end_date', 'code', 'rent_at', 'rent_finish_at', 'created_at', 'updated_at'], 'safe'],
             [['actualy_total', 'bill_total'], 'number'],
         ];
     }
@@ -55,6 +55,15 @@ class TransactionSearch extends Transaction
             // $query->where('0=1');
             return $dataProvider;
         }
+		
+		if ($this->start_date && $this->end_date) {
+			$query->andFilterWhere([
+				'between',
+				'DATE_FORMAT(created_at, "%Y-%m-%d")',
+				$this->start_date,
+				$this->end_date,
+			]);
+		}
 
         $query->andFilterWhere([
             'id' => $this->id,

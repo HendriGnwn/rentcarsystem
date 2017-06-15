@@ -53,7 +53,8 @@ CrudAsset::register($this);
                                     'data-confirm-message'=>'Are you sure want to delete this item'
                                 ]),
                         ]).                        
-                        '<div class="clearfix"></div>',
+                        '<div class="clearfix"></div>'.
+						Html::a("Refresh Status", ['/transaction/refresh-status'], ['role'=>'modal-remote', 'class' => 'btn btn-sm btn-primary']),
             ]
         ])?>
     </div>

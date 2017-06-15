@@ -42,6 +42,9 @@ class Transaction extends BaseActiveRecord
     
     const STATUS_PAYMENT_DP = 1;
     const STATUS_PAYMENT_PAID = 2;
+	
+	public $start_date;
+	public $end_date;
     
     /**
      * @inheritdoc
